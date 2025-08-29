@@ -6,7 +6,7 @@ function Login({ setIsLoggedIn }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === 'azizbek0206' && password === 'az1zbek12345') {
+    if (username === 'azizbek0206' && password === 'az1zbek12345',username==='ulugbek' && password==='ulugbek1277' ) {
       setIsLoggedIn(true);
     } else {
       alert('Login yoki parol xato!');

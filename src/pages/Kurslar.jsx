@@ -1,54 +1,124 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TableRow from '../components/TableRow';
 
 function Kurslar() {
-  const [courses, setCourses] = useState([
-    { id: 1, name: 'Python', price: '500,000', duration: '3', status: 'Aktiv' },
-  ]);
+  const [courses, setCourses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editForm, setEditForm] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: '', price: '', duration: '', status: 'Aktiv' });
   const [editCourse, setEditCourse] = useState(null);
+  const [error, setError] = useState('');
 
+  // Kurslarni backenddan olish
+  useEffect(() => {
+    fetch('http://192.168.100.11:8000/api/kurslar/')
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => setCourses(data))
+      .catch((error) => setError('Kurslarni yuklashda xatolik: ' + error.message));
+  }, []);
+
+  // Input handler funksiyasi (newCourse uchun)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewCourse({ ...newCourse, [name]: value });
-  };
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditCourse({ ...editCourse, [name]: value });
-  };
-
-  const handleAddCourse = (e) => {
-    e.preventDefault();
-    if (newCourse.name && newCourse.price && newCourse.duration) {
-      setCourses([...courses, { id: Date.now(), ...newCourse }]);
-      setNewCourse({ name: '', price: '', duration: '', status: 'Aktiv' });
-      setShowForm(false);
+    // Price va duration uchun faqat sonlarni qabul qilish
+    if (name === 'price' || name === 'duration') {
+      if (!isNaN(value) && value !== '') {
+        setNewCourse({ ...newCourse, [name]: parseInt(value) });
+      } else {
+        setNewCourse({ ...newCourse, [name]: '' });
+      }
     } else {
-      alert('Iltimos, barcha maydonlarni to‘ldiring!');
+      setNewCourse({ ...newCourse, [name]: value });
     }
   };
 
+  // Yangi kurs qo'shish
+  const handleAddCourse = async (e) => {
+    e.preventDefault();
+    if (newCourse.name && newCourse.price && newCourse.duration) {
+      try {
+        const response = await fetch('http://192.168.100.11:8000/api/kurslar/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newCourse),
+        });
+        if (!response.ok) throw new Error('Qo‘shishda xatolik');
+        const data = await response.json();
+        setCourses([...courses, data]);
+        setNewCourse({ name: '', price: '', duration: '', status: 'Aktiv' });
+        setShowForm(false);
+        setError('');
+      } catch (error) {
+        setError('Kurs qo‘shishda xatolik: ' + error.message);
+      }
+    } else {
+      setError('Iltimos, barcha majburiy maydonlarni to‘ldiring!');
+    }
+  };
+
+  // Tahrirlash uchun inputni o‘zgartirish
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'price' || name === 'duration') {
+      if (!isNaN(value) && value !== '') {
+        setEditCourse({ ...editCourse, [name]: parseInt(value) });
+      } else {
+        setEditCourse({ ...editCourse, [name]: '' });
+      }
+    } else {
+      setEditCourse({ ...editCourse, [name]: value });
+    }
+  };
+
+  // Tahrirlashni boshlash
   const handleEditCourse = (course) => {
     setEditForm(true);
     setEditCourse({ ...course });
   };
 
-  const handleSaveEdit = (e) => {
+  // Tahrirlangan kursni saqlash
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (editCourse.name && editCourse.price && editCourse.duration) {
-      setCourses(courses.map((c) => (c.id === editCourse.id ? editCourse : c)));
-      setEditForm(false);
-      setEditCourse(null);
+      try {
+        const response = await fetch(`http://192.168.100.11:8000/api/kurslar/${editCourse.id}/`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(editCourse),
+        });
+        if (!response.ok) throw new Error('Yangilashda xatolik');
+        const updatedCourse = await response.json();
+        setCourses(courses.map((c) => (c.id === updatedCourse.id ? updatedCourse : c)));
+        setEditForm(false);
+        setEditCourse(null);
+        setError('');
+      } catch (error) {
+        setError('Kursni yangilashda xatolik: ' + error.message);
+      }
     } else {
-      alert('Iltimos, barcha maydonlarni to‘ldiring!');
+      setError('Iltimos, barcha majburiy maydonlarni to‘ldiring!');
     }
   };
 
-  const handleDeleteCourse = (id) => {
-    setCourses(courses.filter((c) => c.id !== id));
+  // Kursni o‘chirish
+  const handleDeleteCourse = async (id) => {
+    try {
+      const response = await fetch(`http://192.168.100.11:8000/api/kurslar/${id}/`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('O‘chirishda xatolik');
+      setCourses(courses.filter((c) => c.id !== id));
+      setError('');
+    } catch (error) {
+      setError('Kursni o‘chirishda xatolik: ' + error.message);
+    }
   };
 
   return (
@@ -62,6 +132,7 @@ function Kurslar() {
           Yangi kurs
         </button>
       </div>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       {showForm && (
         <form onSubmit={handleAddCourse} className="mb-6 bg-white p-4 border rounded">
           <div className="mb-4">
@@ -83,7 +154,7 @@ function Kurslar() {
               value={newCourse.price}
               onChange={handleInputChange}
               className="w-full p-2 border rounded"
-              placeholder="Masalan, 500,000"
+              placeholder="Masalan, 500000"
             />
           </div>
           <div className="mb-4">

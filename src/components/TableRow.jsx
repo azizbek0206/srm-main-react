@@ -1,13 +1,19 @@
+import React from 'react';
+
 function TableRow({ name, price, duration, status, onEdit, onDelete }) {
   return (
-    <tr className="border-b">
-      <td className="p-2">{name}</td>
-      <td className="p-2">{price}</td>
-      <td className="p-2">{duration}</td>
-      <td className="p-2">{status}</td>
-      <td className="p-2">
-        <a href="#" onClick={onEdit} className="text-blue-500 mr-2">Tahrirlash</a>
-        <a href="#" onClick={onDelete} className="text-red-500">O‘chirish</a>
+    <tr>
+      <td className="p-2 border">{name}</td>
+      <td className="p-2 border">{price}</td>
+      <td className="p-2 border">{duration}</td>
+      <td className="p-2 border">{status}</td>
+      <td className="p-2 border">
+        <button onClick={onEdit} className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">
+          Tahrirlash
+        </button>
+        <button onClick={onDelete} className="bg-red-500 text-white px-2 py-1 rounded">
+          O‘chirish
+        </button>
       </td>
     </tr>
   );

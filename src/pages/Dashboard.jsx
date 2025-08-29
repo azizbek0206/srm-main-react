@@ -162,10 +162,34 @@ function Dashboard() {
             To‘lovga o‘tish
           </button>
           <button
-            onClick={() => navigate('/hisobotlar')} // Hisobotlar sahifasi mavjud emas, keyin qo'shish mumkin
+            onClick={() => navigate('/hisobotlar')}
             className="bg-yellow-500 text-white px-4 py-2 rounded"
           >
             Hisobot ko‘rish
+          </button>
+          <button
+            onClick={() => navigate('/kurslar')}
+            className="bg-purple-500 text-white px-4 py-2 rounded"
+          >
+            Kurslar
+          </button>
+          <button
+            onClick={() => navigate('/oquvchilar')}
+            className="bg-indigo-500 text-white px-4 py-2 rounded"
+          >
+            O‘quvchilar
+          </button>
+          <button
+            onClick={() => navigate('/davomat')}
+            className="bg-teal-500 text-white px-4 py-2 rounded"
+          >
+            Davomat
+          </button>
+          <button
+            onClick={() => navigate('/imtihonlar')}
+            className="bg-orange-500 text-white px-4 py-2 rounded"
+          >
+            Imtihonlar
           </button>
         </div>
       </div>
